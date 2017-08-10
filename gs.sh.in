@@ -1,0 +1,13 @@
+#!/bin/bash
+
+GHOSTSCRIPT_PREFIX=${MACTEXADDONS_PREFIX:-@@MACTEXADDONS_PREFIX@@}
+
+__gs=${GHOSTSCRIPT_PREFIX}/bin/gs-noX11
+
+$__gs \
+    -I ${GHOSTSCRIPT_PREFIX}/share/ghostscript/9.21/Resource/Init \
+    -I ${GHOSTSCRIPT_PREFIX}/share/ghostscript/9.21/Resource/Font \
+    -I ${GHOSTSCRIPT_PREFIX}/share/ghostscript/9.21/lib \
+    -I ${GHOSTSCRIPT_PREFIX}/share/ghostscript/9.21/fonts \
+    -I ${GHOSTSCRIPT_PREFIX}/share/ghostscript/fonts \
+    $@
