@@ -19,7 +19,7 @@ cp -a Work/* ${MACTEXADDONS_PREFIX}/
 
 # setup ghostscript for CID/TTF CJK fonts
 perl $(dirname $0)/cjk-gs-integrate.pl --force \
-     --output ${MACTEXADDONS_PREFIX}/share/ghostscript/9.21/Resource/
+     --output ${MACTEXADDONS_PREFIX}/share/ghostscript/9.25/Resource/
 
 echo $(basename $0): done
 
