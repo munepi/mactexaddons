@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # MACTEXADDITPKG=mactexadditions20130618
-GSVER=9.25
+GSVER=9.53.3
 GSSHAREDIR=ghostscript-${GSVER}-share
-NKFTARBALL=nkf-2.1.4-SnowLeopard+-20161216.tar.gz
+NKFTARBALL=nkf-2.1.5.high_sierra.bottle.tar.gz
 
-__tar="$(dirname $0)/bin/gtar --owner 0 --group 0"
-# __wget=$(dirname $0)/bin/wget.x86_64-darwin
+__tar="/usr/local/bin/gtar --owner 0 --group 0"
+
 
 mactexaddonsPrep(){
     for x in wget pixz curl shasum pkgutil pax; do
@@ -17,8 +17,8 @@ mactexaddonsPrep(){
     # shasum -c ${MACTEXADDITPKG}.pkg.sha1sum
 
     ## Ghostscript-9.16.pkg supported standard structure of GNU/GS.
-    wget -N https://pages.uoregon.edu/koch/Ghostscript-${GSVER}.pkg
-    shasum -c Ghostscript-${GSVER}.pkg.sha1sum
+    # wget -N https://pages.uoregon.edu/koch/Ghostscript-${GSVER}-Full.pkg
+    shasum -c Ghostscript-${GSVER}-Full.pkg.sha1sum
 
     return 0
 }
@@ -36,7 +36,7 @@ mactexaddonsBuild(){
     mactexaddonsClean || return 1
     mkdir -p Work || return 1
 
-    # ## extract ImageMagick and Ghostscript contained in the MacTeX 
+    # ## extract ImageMagick and Ghostscript contained in the MacTeX
     # ## additions package
     # pkgutil --expand ${MACTEXADDITPKG}.pkg Temp || return 1
     # ## local: ImageMagick
@@ -47,19 +47,24 @@ mactexaddonsBuild(){
     rm -rf Temp || return 1
     # pkgutil --expand Ghostscript-${GSVER}.pkg Temp || return 1
     mkdir Temp
-    xar --exclude Resources -xvf Ghostscript-${GSVER}.pkg -C Temp
-    $__pax --insecure -rz -f ./Temp/local.pkg/Payload -s ',^./,./Work/,'
+    xar --exclude Resources -xvf Ghostscript-${GSVER}-Full.pkg -C Temp
+    $__pax --insecure -rz -f ./Temp/Ghostscript-9.53.3-libgs-Start.pkg/Payload -s ',^./,./Work/,'
+    $__pax --insecure -rz -f ./Temp/Ghostscript-9.53.3-Start.pkg/Payload -s ',^./,./Work/,'
 
     # mv Work/bin/convert Work/bin/convert-mactexaddons
     # rm -rf Work/share/ghostscript
-    find Work/share -type l -delete
-    cp -a ${GSSHAREDIR}/* Work/share/ || return 1
+    find Work//usr/local/share/ -type l -delete
+    cp -a ${GSSHAREDIR}/* Work//usr/local/share/ || return 1
+    mv Work//usr/local/* Work/
+    rm -rf Work//usr/local/
 
     ## nkf
     $__tar -C Work -xf ${NKFTARBALL} || return 1
+    cp -afv Work/nkf/2.1.5/{bin,share} Work/
+    rm -rf Work/nkf/
 
     ## run cjk-gs-integrate.pl when installing mactexaddons!!
-    # ## generate the Ghostscript FontSpec files for the Hiragino fonts 
+    # ## generate the Ghostscript FontSpec files for the Hiragino fonts
     # ## bundled on Mac OS X
     # mkhirafontspec Work/share/ghostscript/${GSVER}/Resource/Font
     # mkhiracidfonts Work/share/ghostscript/${GSVER}/Resource/CIDFont
@@ -72,9 +77,9 @@ mactexaddonsPack(){
 
     rm -rf ${PKGNAME}
     mkdir -p ${PKGNAME}
-    
+
     cp -a Work Install.sh ${PKGNAME}/
-    cp -a cjk-gs-integrate.pl ${PKGNAME}/
+    # cp -a cjk-gs-integrate.pl ${PKGNAME}/
     # cp -a convert.sh.in ${PKGNAME}/
     cp -a gs.sh.in gsx.sh.in ${PKGNAME}/
 
@@ -91,10 +96,10 @@ mactexaddonsPackSource(){
 
     rm -rf ${PKGNAME}
     mkdir -p ${PKGNAME}
-   
+
     # cp -a ${MACTEXADDITPKG}.pkg.sha1sum ${PKGNAME}/
     cp -a libmactexaddons.sh Build.sh Install.sh ${PKGNAME}/
-    cp -a cjk-gs-integrate.pl ${PKGNAME}/
+    # cp -a cjk-gs-integrate.pl ${PKGNAME}/
     # cp -a convert.sh.in ${PKGNAME}/
     cp -a gs.sh.in gsx.sh.in ${PKGNAME}/
     cp -a ${GSSHAREDIR} ${PKGNAME}/
@@ -140,7 +145,7 @@ FontList=(
     # HiraginoSansGB-W6,GB
     # HiraginoSansCNS-W3,CNS
     # HiraginoSansCNS-W6,CNS
-    ## Jiyukobo Yu bundled in OS X 
+    ## Jiyukobo Yu bundled in OS X
     YuGo-Bold,Japan
     YuGo-Medium,Japan
     YuMin-Demibold,Japan
@@ -404,7 +409,7 @@ mkhiracidfonts(){
         ln -s "/Library/Fonts/Yu Mincho Demibold.otf" YuMin-Demibold ||:
         ln -s "/Library/Fonts/Yu Mincho Medium.otf" YuMin-Medium ||:
     )
-    
+
     return 0
 }
 
