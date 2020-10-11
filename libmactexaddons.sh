@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# MACTEXADDITPKG=mactexadditions20130618
 GSVER=9.53.3
 GSSHAREDIR=ghostscript-${GSVER}-share
 NKFTARBALL=nkf-2.1.5.high_sierra.bottle.tar.gz
@@ -12,9 +11,6 @@ mactexaddonsPrep(){
     for x in wget pixz curl shasum pkgutil pax; do
         which ${x} >/dev/null
     done
-
-    # $__wget -N http://mirrors.ctan.org/systems/mac/mactex/${MACTEXADDITPKG}.pkg
-    # shasum -c ${MACTEXADDITPKG}.pkg.sha1sum
 
     ## Ghostscript-9.16.pkg supported standard structure of GNU/GS.
     # wget -N https://pages.uoregon.edu/koch/Ghostscript-${GSVER}-Full.pkg
@@ -36,14 +32,6 @@ mactexaddonsBuild(){
     mactexaddonsClean || return 1
     mkdir -p Work || return 1
 
-    # ## extract ImageMagick and Ghostscript contained in the MacTeX
-    # ## additions package
-    # pkgutil --expand ${MACTEXADDITPKG}.pkg Temp || return 1
-    # ## local: ImageMagick
-    # $__pax --insecure -rz -f ./Temp/local.pkg/Payload -s ',^./,./Work/,'
-    # ## local-1: Ghostscript 9.07
-    # # $__pax --insecure -rz -f ./Temp/local-1.pkg/Payload -s ',^./,./Work/,'
-
     rm -rf Temp || return 1
     # pkgutil --expand Ghostscript-${GSVER}.pkg Temp || return 1
     mkdir Temp
@@ -51,12 +39,16 @@ mactexaddonsBuild(){
     $__pax --insecure -rz -f ./Temp/Ghostscript-9.53.3-libgs-Start.pkg/Payload -s ',^./,./Work/,'
     $__pax --insecure -rz -f ./Temp/Ghostscript-9.53.3-Start.pkg/Payload -s ',^./,./Work/,'
 
-    # mv Work/bin/convert Work/bin/convert-mactexaddons
-    # rm -rf Work/share/ghostscript
     find Work//usr/local/share/ -type l -delete
     cp -a ${GSSHAREDIR}/* Work//usr/local/share/ || return 1
     mv Work//usr/local/* Work/
     rm -rf Work//usr/local/
+
+    # install wrapper for each gs-noX11, gs-x11
+    for x in gs gsx; do
+        cp -a ${x}.sh Work/bin/${x}
+        chmod +x Work/bin/${x}
+    done
 
     ## nkf
     $__tar -C Work -xf ${NKFTARBALL} || return 1
@@ -79,31 +71,6 @@ mactexaddonsPack(){
     mkdir -p ${PKGNAME}
 
     cp -a Work Install.sh ${PKGNAME}/
-    # cp -a cjk-gs-integrate.pl ${PKGNAME}/
-    # cp -a convert.sh.in ${PKGNAME}/
-    cp -a gs.sh.in gsx.sh.in ${PKGNAME}/
-
-    $__tar -cf - ${PKGNAME} | pixz -9 -p 4 >${PKGNAME}.tar.xz
-    shasum ${PKGNAME}.tar.xz > ${PKGNAME}.tar.xz.sha1sum
-
-    rm -rf ${PKGNAME}
-
-    return 0
-}
-
-mactexaddonsPackSource(){
-    local PKGNAME=mactexaddons-src-$(date +%Y%m%d)
-
-    rm -rf ${PKGNAME}
-    mkdir -p ${PKGNAME}
-
-    # cp -a ${MACTEXADDITPKG}.pkg.sha1sum ${PKGNAME}/
-    cp -a libmactexaddons.sh Build.sh Install.sh ${PKGNAME}/
-    # cp -a cjk-gs-integrate.pl ${PKGNAME}/
-    # cp -a convert.sh.in ${PKGNAME}/
-    cp -a gs.sh.in gsx.sh.in ${PKGNAME}/
-    cp -a ${GSSHAREDIR} ${PKGNAME}/
-    # cp -a t ${PKGNAME}/
 
     $__tar -cf - ${PKGNAME} | pixz -9 -p 4 >${PKGNAME}.tar.xz
     shasum ${PKGNAME}.tar.xz > ${PKGNAME}.tar.xz.sha1sum
