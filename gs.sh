@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GHOSTSCRIPT_PREFIX=${MACTEXADDONS_PREFIX:-@@MACTEXADDONS_PREFIX@@}
+GHOSTSCRIPT_PREFIX=$(cd $(dirname $0)/../; pwd)
 
 __gs=${GHOSTSCRIPT_PREFIX}/bin/gs-noX11
 
