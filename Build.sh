@@ -8,7 +8,6 @@ mactexaddonsClean
 mactexaddonsPrep
 mactexaddonsBuild
 mactexaddonsPack
-# mactexaddonsPackSource
 mactexaddonsClean
 
 exit
